@@ -98,7 +98,7 @@ var (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "lachesis"
+	app.Name = "Lachesis"
 	app.Usage = "hashgraph consensus"
 	app.HideVersion = true //there is a special command to print the version
 	app.Commands = []cli.Command{
@@ -311,7 +311,7 @@ func defaultDataDir() string {
 		if runtime.GOOS == "darwin" {
 			return filepath.Join(home, ".lachesis")
 		} else if runtime.GOOS == "windows" {
-			return filepath.Join(home, "AppData", "Roaming", "lachesis")
+			return filepath.Join(home, "AppData", "Roaming", "LACHESIS")
 		} else {
 			return filepath.Join(home, ".lachesis")
 		}

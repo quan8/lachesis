@@ -17,7 +17,7 @@ for i in $(seq 1 $N)
 do
     dest=$DEST/node$i
     mkdir -p $dest
-    docker run --rm quan8/lachesis keygen | sed -n -e "2 w $dest/pub" -e "4,+4 w $dest/priv_key.pem"
+    docker run --rm quan8/lachesis:0.2.1 keygen | sed -n -e "2 w $dest/pub" -e "4,+4 w $dest/priv_key.pem"
     echo "$IPBASE$i:$PORT" > $dest/addr
 done
 

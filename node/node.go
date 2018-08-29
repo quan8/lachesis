@@ -554,6 +554,8 @@ func (n *Node) GetStats() map[string]string {
 
 	consensusEvents := n.core.GetConsensusEventsCount()
 	consensusEventsPerSecond := float64(consensusEvents) / timeElapsed.Seconds()
+	consensusTransactions := n.core.GetConsensusTransactionsCount()
+	transactionsPerSecond := float64(consensusTransactions) / timeElapsed.Seconds()
 
 	lastConsensusRound := n.core.GetLastConsensusRoundIndex()
 	var consensusRoundsPerSecond float64
@@ -562,19 +564,25 @@ func (n *Node) GetStats() map[string]string {
 	}
 
 	s := map[string]string{
-		"last_consensus_round":   toString(lastConsensusRound),
-		"last_block_index":       strconv.Itoa(n.core.GetLastBlockIndex()),
-		"consensus_events":       strconv.Itoa(consensusEvents),
-		"consensus_transactions": strconv.Itoa(n.core.GetConsensusTransactionsCount()),
-		"undetermined_events":    strconv.Itoa(len(n.core.GetUndeterminedEvents())),
-		"transaction_pool":       strconv.Itoa(len(n.core.transactionPool)),
-		"num_peers":              strconv.Itoa(len(n.peerSelector.Peers())),
-		"sync_rate":              strconv.FormatFloat(n.SyncRate(), 'f', 2, 64),
-		"events_per_second":      strconv.FormatFloat(consensusEventsPerSecond, 'f', 2, 64),
-		"rounds_per_second":      strconv.FormatFloat(consensusRoundsPerSecond, 'f', 2, 64),
-		"round_events":           strconv.Itoa(n.core.GetLastCommitedRoundEventsCount()),
-		"id":                     strconv.Itoa(n.id),
-		"state":                  n.getState().String(),
+		"last_consensus_round":    toString(lastConsensusRound),
+		"time_elapsed":            strconv.FormatFloat(timeElapsed.Seconds(), 'f', 2, 64),
+		"heartbeat":               strconv.FormatFloat(n.conf.HeartbeatTimeout.Seconds(), 'f', 2, 64),
+		"node_current":            strconv.FormatInt(time.Now().Unix(), 10),
+		"node_start":              strconv.FormatInt(n.start.Unix(), 10),
+		"last_block_index":        strconv.Itoa(n.core.GetLastBlockIndex()),
+		"consensus_events":        strconv.Itoa(consensusEvents),
+		"sync_limit":              strconv.Itoa(n.conf.SyncLimit),
+		"consensus_transactions":  strconv.Itoa(consensusTransactions),
+		"undetermined_events":     strconv.Itoa(len(n.core.GetUndeterminedEvents())),
+		"transaction_pool":        strconv.Itoa(len(n.core.transactionPool)),
+		"num_peers":               strconv.Itoa(len(n.peerSelector.Peers())),
+		"sync_rate":               strconv.FormatFloat(n.SyncRate(), 'f', 2, 64),
+		"transactions_per_second": strconv.FormatFloat(transactionsPerSecond, 'f', 2, 64),
+		"events_per_second":       strconv.FormatFloat(consensusEventsPerSecond, 'f', 2, 64),
+		"rounds_per_second":       strconv.FormatFloat(consensusRoundsPerSecond, 'f', 2, 64),
+		"round_events":            strconv.Itoa(n.core.GetLastCommitedRoundEventsCount()),
+		"id":                      strconv.Itoa(n.id),
+		"state":                   n.getState().String(),
 	}
 	return s
 }
@@ -604,6 +612,46 @@ func (n *Node) SyncRate() float64 {
 		syncErrorRate = float64(n.syncErrors) / float64(n.syncRequests)
 	}
 	return 1 - syncErrorRate
+}
+
+func (n *Node) GetParticipants() (map[string]int, error) {
+	return n.core.hg.Store.Participants()
+}
+
+func (n *Node) GetEvent(event string) (hg.Event, error) {
+	return n.core.hg.Store.GetEvent(event)
+}
+
+func (n *Node) GetLastEventFrom(participant string) (string, bool, error) {
+	return n.core.hg.Store.LastEventFrom(participant)
+}
+
+func (n *Node) GetKnownEvents() map[int]int {
+	return n.core.hg.Store.KnownEvents()
+}
+
+func (n *Node) GetConsensusEvents() []string {
+	return n.core.hg.Store.ConsensusEvents()
+}
+
+func (n *Node) GetRound(roundIndex int) (hg.RoundInfo, error) {
+	return n.core.hg.Store.GetRound(roundIndex)
+}
+
+func (n *Node) GetLastRound() int {
+	return n.core.hg.Store.LastRound()
+}
+
+func (n *Node) GetRoundWitnesses(roundIndex int) []string {
+	return n.core.hg.Store.RoundWitnesses(roundIndex)
+}
+
+func (n *Node) GetRoundEvents(roundIndex int) int {
+	return n.core.hg.Store.RoundEvents(roundIndex)
+}
+
+func (n *Node) GetRoot(rootIndex string) (hg.Root, error) {
+	return n.core.hg.Store.GetRoot(rootIndex)
 }
 
 func (n *Node) GetBlock(blockIndex int) (hg.Block, error) {
