@@ -1,4 +1,4 @@
-## BFT Consensus platform for distributed applications.
+# BFT Consensus platform for distributed applications.
 
 For guidance on how to install and use Lachesis please visit our
 [documentation](http://docs.lachesis.io) pages.
